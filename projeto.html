@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cena 3D - Computação Gráfica</title>
+    <style>
+        /* Remove margens e configura o canvas para tela cheia */
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <!-- Inclusão das bibliotecas Three.js e controles de órbita -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        // ==============================================
+        // INICIALIZAÇÃO DA CENA, CÂMERA E RENDERIZADOR
+        // ==============================================
+        
+        // Criação da cena 3D
+        const scene = new THREE.Scene();
+        
+        // Configuração da câmera perspectiva
+        const camera = new THREE.PerspectiveCamera(
+            75, // campo de visão (em graus)
+            window.innerWidth / window.innerHeight, // proporção de aspecto
+            0.1, // plano de recorte próximo
+            1000 // plano de recorte distante
+        );
+        
+        // Criação do renderizador WebGL com antialiasing
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true // Habilita suavização para bordas mais suaves
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // ==============================================
+        // CONFIGURAÇÃO DE ILUMINAÇÃO
+        // ==============================================
+        
+        // Luz ambiente para iluminação geral
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        
+        // Luz direcional para sombras e realce de formas
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 5, 5); // Posição da luz no espaço 3D
+        scene.add(directionalLight);
+
+        // ==============================================
+        // CRIAÇÃO DE OBJETOS 3D
+        // ==============================================
+        
+        // Cubo com textura
+        const textureLoader = new THREE.TextureLoader();
+        const cubeTexture = textureLoader.load('https://threejs.org/examples/textures/checker.png');
+        
+        const cubeGeometry = new THREE.BoxGeometry(); // Geometria cúbica
+        const cubeMaterial = new THREE.MeshPhongMaterial({ 
+            map: cubeTexture // Aplica a textura carregada
+        });
+        const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.set(-2, 0, 0); // Posiciona à esquerda
+        scene.add(cube);
+
+        // Esfera verde com alta resolução
+        const sphereGeometry = new THREE.SphereGeometry(
+            0.5,  // raio
+            64,   // segmentos horizontais (mais = mais suave)
+            64    // segmentos verticais (mais = mais suave)
+        );
+        const sphereMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x00ff00 // Cor verde
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(0, 0, 0); // Posiciona no centro
+        scene.add(sphere);
+
+        // Cilindro azul
+        const cylinderGeometry = new THREE.CylinderGeometry(
+            0.5, // raio superior
+            0.5, // raio inferior
+            1    // altura
+        );
+        const cylinderMaterial = new THREE.MeshPhongMaterial({ 
+            color: 0x0000ff // Cor azul
+        });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.position.set(2, 0, 0); // Posiciona à direita
+        scene.add(cylinder);
+
+        // ==============================================
+        // CONFIGURAÇÃO DE CÂMERA E CONTROLES
+        // ==============================================
+        
+        // Posiciona a câmera afastada para visualizar a cena
+        camera.position.z = 5;
+
+        // Habilita controles de órbita (permite rotacionar e zoom com mouse)
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Suaviza o movimento
+        controls.dampingFactor = 0.05; // Quantidade de suavização
+
+        // ==============================================
+        // ANIMAÇÕES E TRANSFORMAÇÕES
+        // ==============================================
+        
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotação contínua do cubo nos eixos X e Y
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+
+            // Efeito de pulsação na esfera usando função senoidal
+            const scale = Math.sin(Date.now() * 0.002) * 0.5 + 1; // Varia entre 0.5 e 1.5
+            sphere.scale.set(scale, scale, scale);
+
+            // Movimento vertical do cilindro usando função senoidal
+            cylinder.position.y = Math.sin(Date.now() * 0.002) * 2; // Varia entre -2 e 2
+
+            // Atualiza controles e renderiza a cena
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // ==============================================
+        // TRATAMENTO DE REDIMENSIONAMENTO DE JANELA
+        // ==============================================
+        
+        window.addEventListener('resize', onWindowResize, false);
+
+        function onWindowResize() {
+            // Ajusta proporção de aspecto da câmera
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            
+            // Atualiza tamanho do renderizador
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // ==============================================
+        // INICIAR APLICAÇÃO
+        // ==============================================
+        
+        animate();
+    </script>
+</body>
+</html>
